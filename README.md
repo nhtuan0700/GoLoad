@@ -15,3 +15,6 @@
 It is necessary in project. Following:
 1. Buf generate:
 - https://buf.build/docs/reference/cli/buf/generate
+
+2. Linter:
+- https://golangci-lint.run/welcome/install/

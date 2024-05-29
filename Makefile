@@ -7,3 +7,6 @@ include api/Makefile
 generate:
 	buf generate api
 
+.PHONY: lint
+lint:
+	golangci-lint run ./...
