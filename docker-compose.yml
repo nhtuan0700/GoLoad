@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  go:
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/var/www
+    tty: true
+  mysql:
+    image: mysql:8.0.30
+    ports:
+      - 3307:3306
+    environment:
+      - MYSQL_DATABASE=go_load
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=root

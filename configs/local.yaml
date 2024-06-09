@@ -1,0 +1,23 @@
+database:
+  type: "mysql"
+  host: "mysql"
+  port: 3306
+  username: "user"
+  password: "password"
+  database: "go_load"
+
+log:
+  level: info
+
+auth:
+  hash:
+    cost: 10
+  token:
+    expires_in: 1h
+    regenerate_token_before_expiry: 1h
+
+grpc:
+  address: '127.0.0.1:8081'
+
+http:
+  address: '0.0.0.0:8080'

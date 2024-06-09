@@ -1,0 +1,43 @@
+package grpc
+
+import (
+	"context"
+
+	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
+	"github.com/nhtuan0700/GoLoad/internal/logic"
+)
+
+const (
+	//nolint:gosec // This is just to specify the metadata name
+	AuthTokenMetadataName = "GOLOAD_AUTH"
+)
+
+type Handler struct {
+	go_load.UnimplementedGoLoadServiceServer
+	accountLogic logic.AccountLogic
+}
+
+func NewHandler(
+	accountLogic logic.AccountLogic,
+) go_load.GoLoadServiceServer {
+	return Handler{
+		accountLogic: accountLogic,
+	}
+}
+
+func (h Handler) CreateAccount(
+	ctx context.Context,
+	request *go_load.CreateAccountRequest,
+) (*go_load.CreateAccountResponse, error) {
+	output, err := h.accountLogic.CreateAccount(ctx, logic.CreateAccountParams{
+		AccountName:     request.AccountName,
+		AccountPassword: request.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.CreateAccountResponse{
+		AccountId: output.ID,
+	}, nil
+}
