@@ -10,6 +10,8 @@ import (
 	"github.com/google/wire"
 	"github.com/nhtuan0700/GoLoad/internal/app"
 	"github.com/nhtuan0700/GoLoad/internal/configs"
+	"github.com/nhtuan0700/GoLoad/internal/dataaccess"
+	"github.com/nhtuan0700/GoLoad/internal/dataaccess/cache"
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/database"
 	"github.com/nhtuan0700/GoLoad/internal/handler"
 	"github.com/nhtuan0700/GoLoad/internal/handler/grpc"
@@ -39,9 +41,17 @@ func InitializeStandaloneServer(configFilePath configs.ConfigFilePath) (*app.Ser
 	goquDatabase := database.InitializeGoquDB(db)
 	accountDataAccessor := database.NewAccountDataAccessor(goquDatabase, logger)
 	accountPasswordDataAccessor := database.NewAccountPasswordDataAccessor(goquDatabase, logger)
+	configsCache := config.Cache
+	client, err := cache.NewClient(configsCache, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	takeAccountName := cache.NewTakenAccountName(client, logger)
 	auth := config.Auth
 	hashLogic := logic.NewHash(auth)
-	accountLogic := logic.NewAccountLogic(goquDatabase, accountDataAccessor, accountPasswordDataAccessor, hashLogic, logger)
+	accountLogic := logic.NewAccountLogic(goquDatabase, accountDataAccessor, accountPasswordDataAccessor, takeAccountName, hashLogic, logger)
 	goLoadServiceServer := grpc.NewHandler(accountLogic)
 	server := grpc.NewServer(goLoadServiceServer, config, logger)
 	configsGRPC := config.GRPC
@@ -56,4 +66,4 @@ func InitializeStandaloneServer(configFilePath configs.ConfigFilePath) (*app.Ser
 
 // wire.go:
 
-var WireSet = wire.NewSet(configs.WireSet, database.WireSet, handler.WireSet, logic.WireSet, utils.WireSet, app.WireSet)
+var WireSet = wire.NewSet(configs.WireSet, dataaccess.WireSet, handler.WireSet, logic.WireSet, utils.WireSet, app.WireSet)

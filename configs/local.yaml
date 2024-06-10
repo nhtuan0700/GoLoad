@@ -4,7 +4,13 @@ database:
   port: 3306
   username: "user"
   password: "password"
-  database: "go_load"
+  database: "go_load" 
+
+cache:
+  type: "redis"
+  address: "redis:6379"
+  username: ""
+  password: ""
 
 log:
   level: info

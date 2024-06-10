@@ -10,6 +10,7 @@ services:
     volumes:
       - .:/var/www
     tty: true
+
   mysql:
     image: mysql:8.0.30
     ports:
@@ -19,3 +20,9 @@ services:
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=root
+
+  redis:
+    image: redis:7.2.5
+    restart: always
+    ports:
+      - 6379:6379

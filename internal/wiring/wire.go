@@ -9,7 +9,7 @@ import (
 	"github.com/google/wire"
 	"github.com/nhtuan0700/GoLoad/internal/app"
 	"github.com/nhtuan0700/GoLoad/internal/configs"
-	"github.com/nhtuan0700/GoLoad/internal/dataaccess/database"
+	"github.com/nhtuan0700/GoLoad/internal/dataaccess"
 	"github.com/nhtuan0700/GoLoad/internal/handler"
 	"github.com/nhtuan0700/GoLoad/internal/logic"
 	"github.com/nhtuan0700/GoLoad/internal/utils"
@@ -17,7 +17,7 @@ import (
 
 var WireSet = wire.NewSet(
 	configs.WireSet,
-	database.WireSet,
+	dataaccess.WireSet,
 	handler.WireSet,
 	logic.WireSet,
 	utils.WireSet,
