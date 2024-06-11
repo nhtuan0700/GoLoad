@@ -17,8 +17,8 @@ var (
 )
 
 var (
-	ColAccountPasswordOfAccountID = "of_account_id"
-	ColAccountPasswordHash        = "hash"
+	ColNameAccountPasswordOfAccountID = "of_account_id"
+	ColNameAccountPasswordHash        = "hash"
 )
 
 type AccountPassword struct {
@@ -54,8 +54,8 @@ func (a *accountPasswordDataAccessor) CreateAccountPassword(ctx context.Context,
 	_, err := a.database.
 		Insert(TableNameAccountPassword).
 		Rows(goqu.Record{
-			ColAccountPasswordOfAccountID: accountPassword.OfAccountID,
-			ColAccountPasswordHash:        accountPassword.Hash,
+			ColNameAccountPasswordOfAccountID: accountPassword.OfAccountID,
+			ColNameAccountPasswordHash:        accountPassword.Hash,
 		}).
 		Executor().
 		ExecContext(ctx)
@@ -73,7 +73,7 @@ func (a *accountPasswordDataAccessor) GetAccountPassword(ctx context.Context, of
 	accountPassword := AccountPassword{}
 	found, err := a.database.
 		From(TableNameAccountPassword).
-		Where(goqu.C(ColAccountPasswordOfAccountID).Eq(ofAccountID)).
+		Where(goqu.C(ColNameAccountPasswordOfAccountID).Eq(ofAccountID)).
 		ScanStructContext(ctx, &accountPassword)
 
 	if err != nil {
@@ -95,9 +95,9 @@ func (a *accountPasswordDataAccessor) UpdateAccountPassword(ctx context.Context,
 	_, err := a.database.
 		Update(TableNameAccountPassword).
 		Set(goqu.Record{
-			ColAccountPasswordHash: accountPassword.Hash,
+			ColNameAccountPasswordHash: accountPassword.Hash,
 		}).
-		Where(goqu.C(ColAccountPasswordOfAccountID).Eq(accountPassword.OfAccountID)).
+		Where(goqu.C(ColNameAccountPasswordOfAccountID).Eq(accountPassword.OfAccountID)).
 		Executor().
 		ExecContext(ctx)
 

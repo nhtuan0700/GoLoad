@@ -5,6 +5,8 @@ import (
 
 	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
 	"github.com/nhtuan0700/GoLoad/internal/logic"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 const (
@@ -14,11 +16,11 @@ const (
 
 type Handler struct {
 	go_load.UnimplementedGoLoadServiceServer
-	accountLogic logic.AccountLogic
+	accountLogic logic.Account
 }
 
 func NewHandler(
-	accountLogic logic.AccountLogic,
+	accountLogic logic.Account,
 ) go_load.GoLoadServiceServer {
 	return Handler{
 		accountLogic: accountLogic,
@@ -39,5 +41,27 @@ func (h Handler) CreateAccount(
 
 	return &go_load.CreateAccountResponse{
 		AccountId: output.ID,
+	}, nil
+}
+
+func (h Handler) CreateSession(
+	ctx context.Context,
+	request *go_load.CreateSessionRequest,
+) (*go_load.CreateSessionResponse, error) {
+	output, err := h.accountLogic.CreateSession(ctx, logic.CreateSessionParams{
+		AccountName:     request.AccountName,
+		AccountPassword: request.Password,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = grpc.SetHeader(ctx, metadata.Pairs(AuthTokenMetadataName, output.Token))
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.CreateSessionResponse{
+		Account: output.Account,
 	}, nil
 }

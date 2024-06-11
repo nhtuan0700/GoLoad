@@ -102,6 +102,7 @@ linters-settings:
         disabled: true
       - name: unused-parameter
       - name: unused-receiver
+        disabled: true
 
 linters:
   disable-all: true

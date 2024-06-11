@@ -8,6 +8,7 @@ option go_package="grpc/go_load";
 
 service GoLoadService {
   rpc CreateAccount(CreateAccountRequest) returns(CreateAccountResponse) {}
+  rpc CreateSession(CreateSessionRequest) returns(CreateSessionResponse) {}
 }
 
 message Account {
@@ -26,4 +27,17 @@ message CreateAccountRequest {
 
 message CreateAccountResponse {
   uint64 account_id = 1;
+}
+
+message CreateSessionRequest {
+  string account_name = 1 [(validate.rules).string = {
+    pattern:   "^[a-zA-Z0-9]{6,32}$",
+  }];
+  string password = 2 [(validate.rules).string = {
+    pattern:   "^[a-zA-Z0-9]{6,32}$",
+  }];
+}
+
+message CreateSessionResponse {
+  Account account = 1;
 }

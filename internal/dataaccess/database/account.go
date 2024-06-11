@@ -17,8 +17,8 @@ var (
 )
 
 const (
-	ColNameAccountID   = "id"
-	ColNameAccountName = "account_name"
+	ColNameAccountID          = "id"
+	ColNameAccountAccountName = "account_name"
 )
 
 type Account struct {
@@ -54,7 +54,7 @@ func (a *accountDataAccessor) CreateAccount(ctx context.Context, account Account
 	result, err := a.database.
 		Insert(TableNameAccount).
 		Rows(goqu.Record{
-			ColNameAccountName: account.Name,
+			ColNameAccountAccountName: account.Name,
 		}).
 		Executor().
 		ExecContext(ctx)
@@ -100,7 +100,7 @@ func (a *accountDataAccessor) GetAccountByAccountName(ctx context.Context, accou
 	account := Account{}
 	found, err := a.database.
 		From(TableNameAccount).
-		Where(goqu.C(ColNameAccountName).Eq(accountName)).
+		Where(goqu.C(ColNameAccountAccountName).Eq(accountName)).
 		ScanStructContext(ctx, &account)
 
 	if err != nil {

@@ -368,3 +368,262 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CreateAccountResponseValidationError{}
+
+// Validate checks the field values on CreateSessionRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateSessionRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateSessionRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateSessionRequestMultiError, or nil if none found.
+func (m *CreateSessionRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateSessionRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if !_CreateSessionRequest_AccountName_Pattern.MatchString(m.GetAccountName()) {
+		err := CreateSessionRequestValidationError{
+			field:  "AccountName",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9]{6,32}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_CreateSessionRequest_Password_Pattern.MatchString(m.GetPassword()) {
+		err := CreateSessionRequestValidationError{
+			field:  "Password",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9]{6,32}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return CreateSessionRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateSessionRequestMultiError is an error wrapping multiple validation
+// errors returned by CreateSessionRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreateSessionRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateSessionRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateSessionRequestMultiError) AllErrors() []error { return m }
+
+// CreateSessionRequestValidationError is the validation error returned by
+// CreateSessionRequest.Validate if the designated constraints aren't met.
+type CreateSessionRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateSessionRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateSessionRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateSessionRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateSessionRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateSessionRequestValidationError) ErrorName() string {
+	return "CreateSessionRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateSessionRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateSessionRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateSessionRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateSessionRequestValidationError{}
+
+var _CreateSessionRequest_AccountName_Pattern = regexp.MustCompile("^[a-zA-Z0-9]{6,32}$")
+
+var _CreateSessionRequest_Password_Pattern = regexp.MustCompile("^[a-zA-Z0-9]{6,32}$")
+
+// Validate checks the field values on CreateSessionResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreateSessionResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreateSessionResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreateSessionResponseMultiError, or nil if none found.
+func (m *CreateSessionResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreateSessionResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetAccount()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateSessionResponseValidationError{
+					field:  "Account",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateSessionResponseValidationError{
+					field:  "Account",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetAccount()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateSessionResponseValidationError{
+				field:  "Account",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreateSessionResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreateSessionResponseMultiError is an error wrapping multiple validation
+// errors returned by CreateSessionResponse.ValidateAll() if the designated
+// constraints aren't met.
+type CreateSessionResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreateSessionResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreateSessionResponseMultiError) AllErrors() []error { return m }
+
+// CreateSessionResponseValidationError is the validation error returned by
+// CreateSessionResponse.Validate if the designated constraints aren't met.
+type CreateSessionResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreateSessionResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreateSessionResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreateSessionResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreateSessionResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreateSessionResponseValidationError) ErrorName() string {
+	return "CreateSessionResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreateSessionResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreateSessionResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreateSessionResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreateSessionResponseValidationError{}

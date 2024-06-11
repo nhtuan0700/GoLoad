@@ -7,6 +7,7 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/cache"
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/database"
+	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
 	"github.com/nhtuan0700/GoLoad/internal/utils"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -23,38 +24,52 @@ type CreateAccountOutput struct {
 	AccountName string
 }
 
-type AccountLogic interface {
-	CreateAccount(ctx context.Context, params CreateAccountParams) (CreateAccountOutput, error)
+type CreateSessionParams struct {
+	AccountName     string
+	AccountPassword string
 }
 
-type accountLogic struct {
+type CreateSessionOutput struct {
+	Token   string
+	Account *go_load.Account
+}
+
+type Account interface {
+	CreateAccount(ctx context.Context, params CreateAccountParams) (CreateAccountOutput, error)
+	CreateSession(ctx context.Context, params CreateSessionParams) (CreateSessionOutput, error)
+}
+
+type account struct {
 	goquDatabase                *goqu.Database
 	accountDataAccessor         database.AccountDataAccessor
 	accountPasswordDataAccessor database.AccountPasswordDataAccessor
 	takenAccountNameCache       cache.TakeAccountName
-	hashLogic                   HashLogic
+	hashLogic                   Hash
+	tokenLogic                  Token
 	logger                      *zap.Logger
 }
 
-func NewAccountLogic(
+func NewAccount(
 	goquDatabase *goqu.Database,
 	accountDataAccessor database.AccountDataAccessor,
 	accountPasswordDataAccessor database.AccountPasswordDataAccessor,
 	takenAccountNameCache cache.TakeAccountName,
-	hashLogic HashLogic,
+	hashLogic Hash,
+	tokenLogic Token,
 	logger *zap.Logger,
-) AccountLogic {
-	return &accountLogic{
+) Account {
+	return &account{
 		goquDatabase:                goquDatabase,
 		accountDataAccessor:         accountDataAccessor,
 		accountPasswordDataAccessor: accountPasswordDataAccessor,
 		takenAccountNameCache:       takenAccountNameCache,
 		hashLogic:                   hashLogic,
+		tokenLogic:                  tokenLogic,
 		logger:                      logger,
 	}
 }
 
-func (a accountLogic) isAccountNameTaken(ctx context.Context, accountName string) (bool, error) {
+func (a *account) isAccountNameTaken(ctx context.Context, accountName string) (bool, error) {
 	logger := utils.LoggerWithContext(ctx, a.logger).With(zap.String("account_name", accountName))
 
 	isTakenAccountName, err := a.takenAccountNameCache.Has(ctx, accountName)
@@ -80,7 +95,7 @@ func (a accountLogic) isAccountNameTaken(ctx context.Context, accountName string
 	return true, nil
 }
 
-func (a accountLogic) CreateAccount(ctx context.Context, params CreateAccountParams) (CreateAccountOutput, error) {
+func (a *account) CreateAccount(ctx context.Context, params CreateAccountParams) (CreateAccountOutput, error) {
 	isAccountNameTaken, err := a.isAccountNameTaken(ctx, params.AccountName)
 	if err != nil {
 		return CreateAccountOutput{}, status.Error(codes.Internal, "failed to check if account name is taken")
@@ -122,5 +137,43 @@ func (a accountLogic) CreateAccount(ctx context.Context, params CreateAccountPar
 	return CreateAccountOutput{
 		ID:          accountID,
 		AccountName: params.AccountName,
+	}, nil
+}
+
+func (a *account) databaseAccountToProtoAccount(account database.Account) *go_load.Account {
+	return &go_load.Account{
+		Id:          account.ID,
+		AccountName: account.Name,
+	}
+}
+
+func (a *account) CreateSession(ctx context.Context, params CreateSessionParams) (CreateSessionOutput, error) {
+	existingAccount, err := a.accountDataAccessor.GetAccountByAccountName(ctx, params.AccountName)
+	if err != nil {
+		return CreateSessionOutput{}, err
+	}
+
+	existingAccountPassword, err := a.accountPasswordDataAccessor.GetAccountPassword(ctx, existingAccount.ID)
+	if err != nil {
+		return CreateSessionOutput{}, err
+	}
+
+	isHashEqual, err := a.hashLogic.IsHashEqual(ctx, params.AccountPassword, existingAccountPassword.Hash)
+	if err != nil {
+		return CreateSessionOutput{}, err
+	}
+
+	if !isHashEqual {
+		return CreateSessionOutput{}, status.Error(codes.Unauthenticated, "incorrect password")
+	}
+
+	token, _, err := a.tokenLogic.GetToken(ctx, existingAccount.ID)
+	if err != nil {
+		return CreateSessionOutput{}, err
+	}
+
+	return CreateSessionOutput{
+		Token:   token,
+		Account: a.databaseAccountToProtoAccount(existingAccount),
 	}, nil
 }

@@ -50,9 +50,17 @@ func InitializeStandaloneServer(configFilePath configs.ConfigFilePath) (*app.Ser
 	}
 	takeAccountName := cache.NewTakenAccountName(client, logger)
 	auth := config.Auth
-	hashLogic := logic.NewHash(auth)
-	accountLogic := logic.NewAccountLogic(goquDatabase, accountDataAccessor, accountPasswordDataAccessor, takeAccountName, hashLogic, logger)
-	goLoadServiceServer := grpc.NewHandler(accountLogic)
+	hash := logic.NewHash(auth)
+	tokenPublicKeyDataAccessor := database.NewTokenPublicKeyAccessor(goquDatabase, logger)
+	tokenPublicKeyCache := cache.NewTokenPublicKeyCache(client, logger)
+	token, err := logic.NewToken(accountDataAccessor, tokenPublicKeyDataAccessor, tokenPublicKeyCache, auth, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	account := logic.NewAccount(goquDatabase, accountDataAccessor, accountPasswordDataAccessor, takeAccountName, hash, token, logger)
+	goLoadServiceServer := grpc.NewHandler(account)
 	server := grpc.NewServer(goLoadServiceServer, config, logger)
 	configsGRPC := config.GRPC
 	configsHTTP := config.HTTP
