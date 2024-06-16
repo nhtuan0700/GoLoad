@@ -48,6 +48,38 @@
         ]
       }
     },
+    "/go_load.GoLoadService/CreateDownloadTask": {
+      "post": {
+        "operationId": "GoLoadService_CreateDownloadTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_loadCreateDownloadTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go_loadCreateDownloadTaskRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GoLoadService"
+        ]
+      }
+    },
     "/go_load.GoLoadService/CreateSession": {
       "post": {
         "operationId": "GoLoadService_CreateSession",
@@ -114,6 +146,25 @@
         }
       }
     },
+    "go_loadCreateDownloadTaskRequest": {
+      "type": "object",
+      "properties": {
+        "downloadType": {
+          "$ref": "#/definitions/go_loadDownloadType"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "go_loadCreateDownloadTaskResponse": {
+      "type": "object",
+      "properties": {
+        "downloadTask": {
+          "$ref": "#/definitions/go_loadDownloadTask"
+        }
+      }
+    },
     "go_loadCreateSessionRequest": {
       "type": "object",
       "properties": {
@@ -132,6 +183,46 @@
           "$ref": "#/definitions/go_loadAccount"
         }
       }
+    },
+    "go_loadDownloadStatus": {
+      "type": "string",
+      "enum": [
+        "DOWNLOAD_STATUS_UNSPECIFIED",
+        "DOWNLOAD_STATUS_PENDING",
+        "DOWNLOAD_STATUS_DOWNLOADING",
+        "DOWNLOAD_STATUS_FAILED",
+        "DOWNLOAD_STATUS_SUCCESS"
+      ],
+      "default": "DOWNLOAD_STATUS_UNSPECIFIED"
+    },
+    "go_loadDownloadTask": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "ofAccount": {
+          "$ref": "#/definitions/go_loadAccount"
+        },
+        "downloadType": {
+          "$ref": "#/definitions/go_loadDownloadType"
+        },
+        "url": {
+          "type": "string"
+        },
+        "downloadStatus": {
+          "$ref": "#/definitions/go_loadDownloadStatus"
+        }
+      }
+    },
+    "go_loadDownloadType": {
+      "type": "string",
+      "enum": [
+        "DOWNLOAD_TYPE_UNSPECIFIED",
+        "DOWNLOAD_TYPE_HTTP"
+      ],
+      "default": "DOWNLOAD_TYPE_UNSPECIFIED"
     },
     "protobufAny": {
       "type": "object",

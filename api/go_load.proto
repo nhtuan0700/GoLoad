@@ -9,6 +9,7 @@ option go_package="grpc/go_load";
 service GoLoadService {
   rpc CreateAccount(CreateAccountRequest) returns(CreateAccountResponse) {}
   rpc CreateSession(CreateSessionRequest) returns(CreateSessionResponse) {}
+  rpc CreateDownloadTask(CreateDownloadTaskRequest) returns(CreateDownloadTaskResponse) {}
 }
 
 message Account {
@@ -40,4 +41,34 @@ message CreateSessionRequest {
 
 message CreateSessionResponse {
   Account account = 1;
+}
+
+enum DownloadType {
+  DOWNLOAD_TYPE_UNSPECIFIED = 0;
+  DOWNLOAD_TYPE_HTTP = 1;
+}
+
+enum DownloadStatus {
+  DOWNLOAD_STATUS_UNSPECIFIED = 0;
+  DOWNLOAD_STATUS_PENDING = 1;
+  DOWNLOAD_STATUS_DOWNLOADING = 2;
+  DOWNLOAD_STATUS_FAILED = 3;
+  DOWNLOAD_STATUS_SUCCESS = 4;
+}
+
+message DownloadTask {
+  uint64 id = 1;
+  Account of_account = 2;
+  DownloadType download_type = 3;
+  string url = 4;
+  DownloadStatus download_status = 5;
+}
+
+message CreateDownloadTaskRequest {
+  DownloadType download_type = 1;
+  string url = 2 [(validate.rules).string.max_len = 2000];
+}
+
+message CreateDownloadTaskResponse {
+  DownloadTask download_task = 1;
 }

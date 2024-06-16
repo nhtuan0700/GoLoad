@@ -8,4 +8,5 @@ var WireSet = wire.NewSet(
 	NewAccountDataAccessor,
 	NewAccountPasswordDataAccessor,
 	NewTokenPublicKeyAccessor,
+	NewDownloadTaskDataAccessor,
 )

@@ -181,13 +181,13 @@ func (t *token) GetAccountIDAndExpireTime(ctx context.Context, tokenString strin
 			return nil, errCannotGetTokenClaims
 		}
 
-		tokenPublicKeyID, ok := claims["kid"].(uint64)
+		tokenPublicKeyID, ok := claims["kid"].(float64)
 		if !ok {
 			logger.Error("cannot get token's kid claim")
 			return nil, errCannotGetTokensKidClaim
 		}
 
-		return t.getJWTPublicKey(ctx, tokenPublicKeyID)
+		return t.getJWTPublicKey(ctx, uint64(tokenPublicKeyID))
 	})
 
 	if err != nil {
@@ -206,7 +206,7 @@ func (t *token) GetAccountIDAndExpireTime(ctx context.Context, tokenString strin
 		return 0, time.Time{}, errCannotGetTokenClaims
 	}
 
-	accountID, ok := claims["sub"].(uint64)
+	accountID, ok := claims["sub"].(float64)
 	if !ok {
 		logger.Error("cannot et token's sub claim")
 		return 0, time.Time{}, errCannotGetTokensSubClaim
@@ -218,5 +218,5 @@ func (t *token) GetAccountIDAndExpireTime(ctx context.Context, tokenString strin
 		return 0, time.Time{}, errCannotGetTokensExpClaim
 	}
 
-	return accountID, time.Unix(int64(expireTimeUnix), 0), nil
+	return uint64(accountID), time.Unix(int64(expireTimeUnix), 0), nil
 }

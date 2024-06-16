@@ -60,7 +60,9 @@ func InitializeStandaloneServer(configFilePath configs.ConfigFilePath) (*app.Ser
 		return nil, nil, err
 	}
 	account := logic.NewAccount(goquDatabase, accountDataAccessor, accountPasswordDataAccessor, takeAccountName, hash, token, logger)
-	goLoadServiceServer := grpc.NewHandler(account)
+	downloadTaskDataAccessor := database.NewDownloadTaskDataAccessor(goquDatabase, logger)
+	downloadTask := logic.NewDownloadTask(goquDatabase, downloadTaskDataAccessor, accountDataAccessor, token, logger)
+	goLoadServiceServer := grpc.NewHandler(account, downloadTask)
 	server := grpc.NewServer(goLoadServiceServer, config, logger)
 	configsGRPC := config.GRPC
 	configsHTTP := config.HTTP
