@@ -8,6 +8,7 @@ import (
 	"github.com/nhtuan0700/GoLoad/internal/configs"
 	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
 	handlerGRPC "github.com/nhtuan0700/GoLoad/internal/handler/grpc"
+	"github.com/nhtuan0700/GoLoad/internal/handler/http/middleware"
 	"github.com/nhtuan0700/GoLoad/internal/handler/http/servermuxoptions"
 	"github.com/nhtuan0700/GoLoad/internal/utils"
 	"go.uber.org/zap"
@@ -82,9 +83,11 @@ func (s server) Start(ctx context.Context) error {
 		return err
 	}
 
+	handler := middleware.CorsMiddleware(grpcGatewayHandler)
+
 	httpServer := http.Server{
 		Addr:              s.httpConfig.Address,
-		Handler:           grpcGatewayHandler,
+		Handler:           handler,
 		ReadHeaderTimeout: time.Minute,
 	}
 

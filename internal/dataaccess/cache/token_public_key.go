@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/nhtuan0700/GoLoad/internal/utils"
@@ -38,12 +39,11 @@ func (c *tokenPublicKeyCache) Get(ctx context.Context, id uint64) (string, error
 	cacheKey := c.getTokenPublicKeyCacheKey(id)
 	cacheEntry, err := c.client.Get(ctx, cacheKey)
 	if err != nil {
+		if errors.Is(err, ErrCacheMiss) {
+			return "", ErrCacheMiss
+		}
 		logger.With(zap.Error(err)).Error("failed to get token public key cache")
 		return "", err
-	}
-
-	if cacheEntry == nil {
-		return "", ErrCacheMiss
 	}
 
 	publicKey, ok := cacheEntry.(string)

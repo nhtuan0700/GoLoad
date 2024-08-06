@@ -44,6 +44,7 @@ func WithAuthMetadataToAuthCookie(
 			Value:    authMetadataValues[0],
 			Expires:  time.Now().Add(expiresInDuration),
 			SameSite: http.SameSiteStrictMode,
+			Path:     "/",
 			HttpOnly: true,
 		})
 

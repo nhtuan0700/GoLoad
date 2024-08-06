@@ -1,4 +1,6 @@
 RUN_GO=docker compose exec go
+RUN_SWAG=docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli:v7.6.0
+RUN_BUF=docker run --rm -v "${PWD}:/workspace" --workdir /workspace bufbuild/buf:1.34.0
 
 .PHONY: tidy
 tidy:
@@ -26,3 +28,7 @@ standalone-server:
 .PHONY: lint
 lint:
 	$(RUN_GO) golangci-lint run ./...
+
+.PHONY: generate-swagger
+generate-swagger:
+	$(RUN_SWAG) generate -i /local/api/go_load.swagger.json -g typescript-fetch -o /local/output/client/$(APP)
