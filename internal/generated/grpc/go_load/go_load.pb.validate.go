@@ -681,7 +681,16 @@ func (m *DownloadTask) validate(all bool) error {
 		}
 	}
 
-	// no validation rules for DownloadType
+	if _, ok := DownloadType_name[int32(m.GetDownloadType())]; !ok {
+		err := DownloadTaskValidationError{
+			field:  "DownloadType",
+			reason: "value must be one of the defined enum values",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	// no validation rules for Url
 

@@ -31,4 +31,4 @@ lint:
 
 .PHONY: generate-swagger
 generate-swagger:
-	$(RUN_SWAG) generate -i /local/api/go_load.swagger.json -g typescript-fetch -o /local/output/client/$(APP)
+	$(RUN_SWAG) generate -i /local/api/go_load.swagger.json -g typescript-fetch -o /local/output/dataaccess/$(APP)

@@ -59,7 +59,7 @@ enum DownloadStatus {
 message DownloadTask {
   uint64 id = 1;
   Account of_account = 2;
-  DownloadType download_type = 3;
+  DownloadType download_type = 3 [(validate.rules).enum.defined_only = true];
   string url = 4;
   DownloadStatus download_status = 5;
 }
