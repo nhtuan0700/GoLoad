@@ -13,7 +13,11 @@ import (
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess"
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/cache"
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/database"
+	"github.com/nhtuan0700/GoLoad/internal/dataaccess/file"
+	"github.com/nhtuan0700/GoLoad/internal/dataaccess/mq/consumer"
+	"github.com/nhtuan0700/GoLoad/internal/dataaccess/mq/producer"
 	"github.com/nhtuan0700/GoLoad/internal/handler"
+	"github.com/nhtuan0700/GoLoad/internal/handler/consumers"
 	"github.com/nhtuan0700/GoLoad/internal/handler/grpc"
 	"github.com/nhtuan0700/GoLoad/internal/handler/http"
 	"github.com/nhtuan0700/GoLoad/internal/logic"
@@ -61,13 +65,36 @@ func InitializeStandaloneServer(configFilePath configs.ConfigFilePath) (*app.Ser
 	}
 	account := logic.NewAccount(goquDatabase, accountDataAccessor, accountPasswordDataAccessor, takeAccountName, hash, token, logger)
 	downloadTaskDataAccessor := database.NewDownloadTaskDataAccessor(goquDatabase, logger)
-	downloadTask := logic.NewDownloadTask(goquDatabase, downloadTaskDataAccessor, accountDataAccessor, token, logger)
+	mq := config.MQ
+	producerClient, err := producer.NewClient(mq, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	downloadTaskCreatedProducer := producer.NewDownloadTaskCreatedProducer(producerClient, logger)
+	download := config.Download
+	fileClient, err := file.NewClient(download, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	downloadTask := logic.NewDownloadTask(goquDatabase, downloadTaskDataAccessor, accountDataAccessor, downloadTaskCreatedProducer, fileClient, token, logger)
 	goLoadServiceServer := grpc.NewHandler(account, downloadTask)
 	server := grpc.NewServer(goLoadServiceServer, config, logger)
 	configsGRPC := config.GRPC
 	configsHTTP := config.HTTP
 	httpServer := http.NewServer(configsGRPC, configsHTTP, auth, logger)
-	appServer := app.NewServer(server, httpServer, logger)
+	consumerConsumer, err := consumer.NewConsumer(mq, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	downloadTaskCreated := consumers.NewDownloadTaskCreated(downloadTask, logger)
+	root := consumers.NewRoot(consumerConsumer, downloadTaskCreated, logger)
+	appServer := app.NewServer(server, httpServer, root, logger)
 	return appServer, func() {
 		cleanup2()
 		cleanup()

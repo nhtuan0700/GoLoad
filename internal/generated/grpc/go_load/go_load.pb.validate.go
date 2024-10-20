@@ -797,10 +797,10 @@ func (m *CreateDownloadTaskRequest) validate(all bool) error {
 
 	// no validation rules for DownloadType
 
-	if utf8.RuneCountInString(m.GetUrl()) > 2000 {
+	if l := utf8.RuneCountInString(m.GetUrl()); l < 10 || l > 200 {
 		err := CreateDownloadTaskRequestValidationError{
 			field:  "Url",
-			reason: "value length must be at most 2000 runes",
+			reason: "value length must be between 10 and 200 runes, inclusive",
 		}
 		if !all {
 			return err

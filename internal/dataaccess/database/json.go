@@ -17,19 +17,17 @@ func (j *JSON) Scan(src any) error {
 
 	switch src := src.(type) {
 	case []byte:
-		err := json.Unmarshal(src, &j.Data)
-		return err
+		return json.Unmarshal(src, &j.Data)
 
 	case string:
-		err := json.Unmarshal([]byte(src), &j.Data)
-		return err
+		return json.Unmarshal([]byte(src), &j.Data)
 
 	default:
 		return fmt.Errorf("unsupported type for json scan: %T", src)
 	}
 }
 
-func (j *JSON) Value() (driver.Value, error) {
+func (j JSON) Value() (driver.Value, error) {
 	if j.Data == nil {
 		return nil, nil
 	}

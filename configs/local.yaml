@@ -27,3 +27,16 @@ grpc:
 
 http:
   address: '0.0.0.0:8080'
+
+mq:
+  addresses:
+    - kafka:9092
+  client_id: "goload"
+
+download:
+  mode: "s3"
+  bucket: "downloaded-files"
+  address: "minio:9000"
+  username: "ROOTNAME"
+  password: "CHANGEME123"
+  download_directory: "downloaded_files"

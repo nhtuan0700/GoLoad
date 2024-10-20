@@ -4,6 +4,7 @@ import (
 	"context"
 	"syscall"
 
+	"github.com/nhtuan0700/GoLoad/internal/handler/consumers"
 	"github.com/nhtuan0700/GoLoad/internal/handler/grpc"
 	"github.com/nhtuan0700/GoLoad/internal/handler/http"
 	"github.com/nhtuan0700/GoLoad/internal/utils"
@@ -11,20 +12,23 @@ import (
 )
 
 type Server struct {
-	grpcServer grpc.Server
-	httpServer http.Server
-	logger     *zap.Logger
+	grpcServer   grpc.Server
+	httpServer   http.Server
+	rootConsumer consumers.Root
+	logger       *zap.Logger
 }
 
 func NewServer(
 	grpcServer grpc.Server,
 	httpServer http.Server,
+	rootConsumer consumers.Root,
 	logger *zap.Logger,
 ) *Server {
 	return &Server{
-		grpcServer: grpcServer,
-		httpServer: httpServer,
-		logger:     logger,
+		grpcServer:   grpcServer,
+		httpServer:   httpServer,
+		rootConsumer: rootConsumer,
+		logger:       logger,
 	}
 }
 
@@ -37,6 +41,11 @@ func (s Server) Start() error {
 	go func() {
 		err := s.httpServer.Start(context.Background())
 		s.logger.With(zap.Error(err)).Info("http server stopped")
+	}()
+
+	go func() {
+		err := s.rootConsumer.Start(context.Background())
+		s.logger.With(zap.Error(err)).Info("message queue consumer stopped")
 	}()
 
 	utils.BlockUntilSignal(syscall.SIGINT, syscall.SIGTERM)

@@ -10,4 +10,6 @@ var WireSet = wire.NewSet(
 	wire.FieldsOf(new(Config), "Auth"),
 	wire.FieldsOf(new(Config), "GRPC"),
 	wire.FieldsOf(new(Config), "HTTP"),
+	wire.FieldsOf(new(Config), "MQ"),
+	wire.FieldsOf(new(Config), "Download"),
 )

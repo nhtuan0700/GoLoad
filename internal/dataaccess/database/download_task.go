@@ -28,14 +28,16 @@ const (
 type DownloadTask struct {
 	ID             uint64 `db:"id" goqu:"skipinsert,skipupdate"`
 	OfAccountID    uint64 `db:"of_account_id" goqu:"skipupdate"`
-	DownloadType   int16  `db:"download_type"`
+	DownloadType   int32  `db:"download_type"`
 	URL            string `db:"url"`
-	DownloadStatus int16  `db:"download_status"`
+	DownloadStatus int32  `db:"download_status"`
 	Metadata       JSON   `db:"metadata"`
 }
 
 type DownloadTaskDataAccessor interface {
 	CreateDownloadTask(ctx context.Context, downloadTask DownloadTask) (uint64, error)
+	UpdateDownloadTask(ctx context.Context, downloadTask DownloadTask) error
+	GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error)
 	WithDatabase(database Database) DownloadTaskDataAccessor
 }
 
@@ -57,20 +59,9 @@ func NewDownloadTaskDataAccessor(
 func (d *downloadTaskDataAccessor) CreateDownloadTask(ctx context.Context, downloadTask DownloadTask) (uint64, error) {
 	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Any("download_task", downloadTask))
 
-	metaData, err := downloadTask.Metadata.Value()
-	if err != nil {
-		logger.With(zap.Error(err)).Error("failed to unmarshal metadata")
-		return 0, status.Error(codes.Internal, "failed to unmarshal metadata")
-	}
 	result, err := d.database.
 		Insert(TableNameDownloadTask).
-		Rows(goqu.Record{
-			ColNameDownloadTaskOfAccountID:    downloadTask.OfAccountID,
-			ColNameDownloadTaskDownloadType:   downloadTask.DownloadType,
-			ColNameDownloadTaskURL:            downloadTask.DownloadStatus,
-			ColNameDownloadTaskDownloadStatus: downloadTask.DownloadStatus,
-			ColNameDownloadTaskMetadata:       metaData,
-		}).
+		Rows(downloadTask).
 		Executor().
 		ExecContext(ctx)
 	if err != nil {
@@ -85,6 +76,47 @@ func (d *downloadTaskDataAccessor) CreateDownloadTask(ctx context.Context, downl
 	}
 
 	return uint64(lastInsertedID), nil
+}
+
+func (d downloadTaskDataAccessor) UpdateDownloadTask(ctx context.Context, downloadTask DownloadTask) error {
+	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Any("download_task", downloadTask))
+
+	_, err := d.database.
+		Update(TableNameDownloadTask).
+		Set(downloadTask).
+		Where(goqu.Ex{ColNameDownloadTaskID: downloadTask.ID}).
+		Executor().
+		ExecContext(ctx)
+
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to update download task")
+		return status.Error(codes.Internal, "failed to update download task")
+	}
+
+	return nil
+}
+
+func (d downloadTaskDataAccessor) GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error) {
+	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("id", id))
+
+	downloadTask := DownloadTask{}
+	found, err := d.database.
+		Select().
+		From(TableNameDownloadTask).
+		Where(goqu.Ex{ColNameDownloadTaskID: id}).
+		ForUpdate(goqu.Wait).
+		ScanStructContext(ctx, &downloadTask)
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to get download task by id")
+		return DownloadTask{}, status.Error(codes.Internal, "failed to get download task by id")
+	}
+
+	if !found {
+		logger.Warn("download task not found")
+		return DownloadTask{}, ErrDownloadTaskNotFound
+	}
+
+	return downloadTask, nil
 }
 
 func (d *downloadTaskDataAccessor) WithDatabase(database Database) DownloadTaskDataAccessor {
