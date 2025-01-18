@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 
@@ -138,6 +137,7 @@ func newS3ClientReadWriteCloser(
 
 func (s *s3ClientReadWriteCloser) Read(p []byte) (int, error) {
 	if len(s.writtenData) > 0 {
+		// Copy writtenData to p, so s3 object can be get from p to process PutObject
 		writtenLength := copy(p, s.writtenData)
 		// reset writtenData to empty string
 		s.writtenData = s.writtenData[writtenLength:]
@@ -158,7 +158,6 @@ func (s *s3ClientReadWriteCloser) Close() error {
 
 func (s *s3ClientReadWriteCloser) Write(p []byte) (int, error) {
 	s.writtenData = append(s.writtenData, p...)
-	log.Println("len: ", len(p))
 	return len(p), nil
 }
 
@@ -180,11 +179,29 @@ func NewS3Client(
 		return nil, fmt.Errorf("failed to new minion client: %w", err)
 	}
 
+	if err := initBucket(context.Background(), minioClient, downloadConfig.Bucket); err != nil {
+		return nil, fmt.Errorf("failed to init bucket: %w", err)
+	}
+
 	return &s3Client{
 		minioClient: minioClient,
 		bucket:      downloadConfig.Bucket,
 		logger:      logger,
 	}, nil
+}
+
+func initBucket(ctx context.Context, minioClient *minio.Client, bucketName string) error {
+	ok, err := minioClient.BucketExists(ctx, bucketName)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		if err := minioClient.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s s3Client) Reader(ctx context.Context, filePath string) (io.ReadCloser, error) {
