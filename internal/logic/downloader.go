@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/nhtuan0700/GoLoad/internal/utils"
@@ -50,8 +49,7 @@ func (d downloader) Download(ctx context.Context, writer io.Writer) (map[string]
 	}
 	defer response.Body.Close()
 
-	copied, err := io.Copy(writer, response.Body)
-	log.Println("copied len: ", copied)
+	_, err = io.Copy(writer, response.Body)
 	if err != nil {
 		logger.With(zap.Error(err)).Error("failed to read response and write to writer")
 		return nil, err
