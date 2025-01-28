@@ -11,6 +11,7 @@ import (
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/mq/producer"
 	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
 	"github.com/nhtuan0700/GoLoad/internal/utils"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
@@ -28,9 +29,21 @@ type CreateDownloadTaskOutput struct {
 	DownloadTask *go_load.DownloadTask
 }
 
+type GetDownloadTaskListParams struct {
+	Token  string
+	Limit  uint64
+	Offset uint64
+}
+
+type GetDownloadTaskListOutput struct {
+	DonwloadTaskList []*go_load.DownloadTask
+	TotalCount       uint64
+}
+
 type DownloadTask interface {
-	CreateDownloadTask(ctx context.Context, params CreateDownloadTaskParams) (CreateDownloadTaskOutput, error)
-	ExecuteDownloadTask(ctx context.Context, id uint64) error
+	CreateDownloadTask(context.Context, CreateDownloadTaskParams) (CreateDownloadTaskOutput, error)
+	ExecuteDownloadTask(context.Context, uint64) error
+	GetDownloadTaskList(context.Context, GetDownloadTaskListParams) (GetDownloadTaskListOutput, error)
 }
 
 type downloadTask struct {
@@ -243,4 +256,28 @@ func (d downloadTask) ExecuteDownloadTask(ctx context.Context, id uint64) error 
 
 	logger.Info("Download task executed successfully")
 	return nil
+}
+
+func (d downloadTask) GetDownloadTaskList(ctx context.Context, params GetDownloadTaskListParams) (GetDownloadTaskListOutput, error) {
+	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
+	if err != nil {
+		return GetDownloadTaskListOutput{}, err
+	}
+
+	account, err := d.accountDataAccessor.GetAccountByID(ctx, accountID)
+	if err != nil {
+		return GetDownloadTaskListOutput{}, err
+	}
+
+	downloadTaskList, count, err := d.downloadTaskDataAccessor.GetDownloadTaskListByAccount(ctx, accountID, params.Limit, params.Offset)
+	if err != nil {
+		return GetDownloadTaskListOutput{}, err
+	}
+
+	return GetDownloadTaskListOutput{
+		DonwloadTaskList: lo.Map(downloadTaskList, func(item database.DownloadTask, _ int) *go_load.DownloadTask {
+			return d.databaseDownloadTaskToProtoDownloadTask(item, account)
+		}),
+		TotalCount: count,
+	}, nil
 }

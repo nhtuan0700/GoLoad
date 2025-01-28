@@ -25,6 +25,7 @@ type GoLoadServiceClient interface {
 	CreateAccount(ctx context.Context, in *CreateAccountRequest, opts ...grpc.CallOption) (*CreateAccountResponse, error)
 	CreateSession(ctx context.Context, in *CreateSessionRequest, opts ...grpc.CallOption) (*CreateSessionResponse, error)
 	CreateDownloadTask(ctx context.Context, in *CreateDownloadTaskRequest, opts ...grpc.CallOption) (*CreateDownloadTaskResponse, error)
+	GetDownloadTaskList(ctx context.Context, in *GetDownloadTaskListRequest, opts ...grpc.CallOption) (*GetDownloadTaskListResponse, error)
 }
 
 type goLoadServiceClient struct {
@@ -62,6 +63,15 @@ func (c *goLoadServiceClient) CreateDownloadTask(ctx context.Context, in *Create
 	return out, nil
 }
 
+func (c *goLoadServiceClient) GetDownloadTaskList(ctx context.Context, in *GetDownloadTaskListRequest, opts ...grpc.CallOption) (*GetDownloadTaskListResponse, error) {
+	out := new(GetDownloadTaskListResponse)
+	err := c.cc.Invoke(ctx, "/go_load.GoLoadService/GetDownloadTaskList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoLoadServiceServer is the server API for GoLoadService service.
 // All implementations must embed UnimplementedGoLoadServiceServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type GoLoadServiceServer interface {
 	CreateAccount(context.Context, *CreateAccountRequest) (*CreateAccountResponse, error)
 	CreateSession(context.Context, *CreateSessionRequest) (*CreateSessionResponse, error)
 	CreateDownloadTask(context.Context, *CreateDownloadTaskRequest) (*CreateDownloadTaskResponse, error)
+	GetDownloadTaskList(context.Context, *GetDownloadTaskListRequest) (*GetDownloadTaskListResponse, error)
 	mustEmbedUnimplementedGoLoadServiceServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedGoLoadServiceServer) CreateSession(context.Context, *CreateSe
 }
 func (UnimplementedGoLoadServiceServer) CreateDownloadTask(context.Context, *CreateDownloadTaskRequest) (*CreateDownloadTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateDownloadTask not implemented")
+}
+func (UnimplementedGoLoadServiceServer) GetDownloadTaskList(context.Context, *GetDownloadTaskListRequest) (*GetDownloadTaskListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDownloadTaskList not implemented")
 }
 func (UnimplementedGoLoadServiceServer) mustEmbedUnimplementedGoLoadServiceServer() {}
 
@@ -152,6 +166,24 @@ func _GoLoadService_CreateDownloadTask_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoLoadService_GetDownloadTaskList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDownloadTaskListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoLoadServiceServer).GetDownloadTaskList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/go_load.GoLoadService/GetDownloadTaskList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoLoadServiceServer).GetDownloadTaskList(ctx, req.(*GetDownloadTaskListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoLoadService_ServiceDesc is the grpc.ServiceDesc for GoLoadService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var GoLoadService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateDownloadTask",
 			Handler:    _GoLoadService_CreateDownloadTask_Handler,
+		},
+		{
+			MethodName: "GetDownloadTaskList",
+			Handler:    _GoLoadService_GetDownloadTaskList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

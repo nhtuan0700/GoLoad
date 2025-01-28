@@ -38,6 +38,7 @@ type DownloadTaskDataAccessor interface {
 	CreateDownloadTask(ctx context.Context, downloadTask DownloadTask) (uint64, error)
 	UpdateDownloadTask(ctx context.Context, downloadTask DownloadTask) error
 	GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error)
+	GetDownloadTaskListByAccount(ctx context.Context, accountID uint64, limit uint64, offset uint64) ([]DownloadTask, uint64, error)
 	WithDatabase(database Database) DownloadTaskDataAccessor
 }
 
@@ -117,6 +118,42 @@ func (d downloadTaskDataAccessor) GetDownloadTaskWithXLock(ctx context.Context, 
 	}
 
 	return downloadTask, nil
+}
+
+func (d *downloadTaskDataAccessor) GetDownloadTaskListByAccount(
+	ctx context.Context,
+	accountID uint64,
+	limit uint64,
+	offset uint64,
+) ([]DownloadTask, uint64, error) {
+	logger := utils.LoggerWithContext(ctx, d.logger).
+		With(zap.Uint64("account_id", accountID)).
+		With(zap.Uint64("limit", limit)).
+		With(zap.Uint64("offset", offset))
+
+	var downloadTaskList []DownloadTask
+	if err := d.database.
+		Select().
+		From(TableNameDownloadTask).
+		Where(goqu.Ex{ColNameAccountPasswordOfAccountID: accountID}).
+		Limit(uint(limit)).
+		Offset(uint(offset)).
+		Executor().
+		ScanStructsContext(ctx, &downloadTaskList); err != nil {
+		logger.With(zap.Error(err)).Error("failed to get download task list by account")
+		return nil, 0, status.Error(codes.Internal, "failed to get download task list by account")
+	}
+
+	count, err := d.database.
+		From(TableNameDownloadTask).
+		Where(goqu.Ex{ColNameAccountPasswordOfAccountID: accountID}).
+		CountContext(ctx)
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to get count of download task by account")
+		return nil, 0, status.Error(codes.Internal, "failed to get count of download task by account")
+	}
+
+	return downloadTaskList, uint64(count), nil
 }
 
 func (d *downloadTaskDataAccessor) WithDatabase(database Database) DownloadTaskDataAccessor {

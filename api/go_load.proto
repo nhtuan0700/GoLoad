@@ -10,6 +10,7 @@ service GoLoadService {
   rpc CreateAccount(CreateAccountRequest) returns(CreateAccountResponse) {}
   rpc CreateSession(CreateSessionRequest) returns(CreateSessionResponse) {}
   rpc CreateDownloadTask(CreateDownloadTaskRequest) returns(CreateDownloadTaskResponse) {}
+  rpc GetDownloadTaskList(GetDownloadTaskListRequest) returns(GetDownloadTaskListResponse) {}
 }
 
 message Account {
@@ -71,4 +72,14 @@ message CreateDownloadTaskRequest {
 
 message CreateDownloadTaskResponse {
   DownloadTask download_task = 1;
+}
+
+message GetDownloadTaskListRequest {
+  uint64 limit = 1;
+  uint64 offset = 2 [(validate.rules).uint64 = {lte: 100}];
+}
+
+message GetDownloadTaskListResponse {
+  repeated DownloadTask download_task_list = 1;
+  uint64 total_count = 2;
 }

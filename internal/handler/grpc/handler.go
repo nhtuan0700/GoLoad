@@ -101,3 +101,22 @@ func (h Handler) CreateDownloadTask(
 		DownloadTask: output.DownloadTask,
 	}, nil
 }
+
+func (h Handler) GetDownloadTaskList(
+	ctx context.Context,
+	request *go_load.GetDownloadTaskListRequest,
+) (*go_load.GetDownloadTaskListResponse, error) {
+	output, err := h.downloadTaskLogic.GetDownloadTaskList(ctx, logic.GetDownloadTaskListParams{
+		Token:  h.getAuthTokenMetadata(ctx),
+		Limit:  request.Limit,
+		Offset: request.Offset,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.GetDownloadTaskListResponse{
+		DownloadTaskList: output.DonwloadTaskList,
+		TotalCount:       output.TotalCount,
+	}, nil
+}

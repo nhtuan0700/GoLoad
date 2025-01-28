@@ -111,6 +111,38 @@
           "GoLoadService"
         ]
       }
+    },
+    "/go_load.GoLoadService/GetDownloadTaskList": {
+      "post": {
+        "operationId": "GoLoadService_GetDownloadTaskList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_loadGetDownloadTaskListResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go_loadGetDownloadTaskListRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GoLoadService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -223,6 +255,35 @@
         "DOWNLOAD_TYPE_HTTP"
       ],
       "default": "DOWNLOAD_TYPE_UNSPECIFIED"
+    },
+    "go_loadGetDownloadTaskListRequest": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "offset": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "go_loadGetDownloadTaskListResponse": {
+      "type": "object",
+      "properties": {
+        "downloadTaskList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/go_loadDownloadTask"
+          }
+        },
+        "totalCount": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",
