@@ -3,6 +3,8 @@ syntax="proto3";
 package go_load;
 
 import "api/validate.proto";
+// https://grpc-ecosystem.github.io/grpc-gateway/docs/tutorials/adding_annotations/
+// import "api/google/api/annotations.proto";
 
 option go_package="grpc/go_load";
 
