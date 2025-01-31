@@ -1272,3 +1272,212 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetDownloadTaskListResponseValidationError{}
+
+// Validate checks the field values on GetDownloadTaskFileRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetDownloadTaskFileRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetDownloadTaskFileRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetDownloadTaskFileRequestMultiError, or nil if none found.
+func (m *GetDownloadTaskFileRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetDownloadTaskFileRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DownloadTaskId
+
+	if len(errors) > 0 {
+		return GetDownloadTaskFileRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetDownloadTaskFileRequestMultiError is an error wrapping multiple
+// validation errors returned by GetDownloadTaskFileRequest.ValidateAll() if
+// the designated constraints aren't met.
+type GetDownloadTaskFileRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetDownloadTaskFileRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetDownloadTaskFileRequestMultiError) AllErrors() []error { return m }
+
+// GetDownloadTaskFileRequestValidationError is the validation error returned
+// by GetDownloadTaskFileRequest.Validate if the designated constraints aren't met.
+type GetDownloadTaskFileRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetDownloadTaskFileRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetDownloadTaskFileRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetDownloadTaskFileRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetDownloadTaskFileRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetDownloadTaskFileRequestValidationError) ErrorName() string {
+	return "GetDownloadTaskFileRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetDownloadTaskFileRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetDownloadTaskFileRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetDownloadTaskFileRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetDownloadTaskFileRequestValidationError{}
+
+// Validate checks the field values on GetDownloadTaskFileResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *GetDownloadTaskFileResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GetDownloadTaskFileResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// GetDownloadTaskFileResponseMultiError, or nil if none found.
+func (m *GetDownloadTaskFileResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GetDownloadTaskFileResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Data
+
+	if len(errors) > 0 {
+		return GetDownloadTaskFileResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// GetDownloadTaskFileResponseMultiError is an error wrapping multiple
+// validation errors returned by GetDownloadTaskFileResponse.ValidateAll() if
+// the designated constraints aren't met.
+type GetDownloadTaskFileResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GetDownloadTaskFileResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GetDownloadTaskFileResponseMultiError) AllErrors() []error { return m }
+
+// GetDownloadTaskFileResponseValidationError is the validation error returned
+// by GetDownloadTaskFileResponse.Validate if the designated constraints
+// aren't met.
+type GetDownloadTaskFileResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GetDownloadTaskFileResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GetDownloadTaskFileResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GetDownloadTaskFileResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GetDownloadTaskFileResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GetDownloadTaskFileResponseValidationError) ErrorName() string {
+	return "GetDownloadTaskFileResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e GetDownloadTaskFileResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGetDownloadTaskFileResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GetDownloadTaskFileResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GetDownloadTaskFileResponseValidationError{}

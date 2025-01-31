@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/nhtuan0700/GoLoad/internal/dataaccess/database"
@@ -13,6 +14,8 @@ import (
 	"github.com/nhtuan0700/GoLoad/internal/utils"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -40,10 +43,16 @@ type GetDownloadTaskListOutput struct {
 	TotalCount       uint64
 }
 
+type GetDownloadTaskFileParams struct {
+	Token string
+	ID    uint64
+}
+
 type DownloadTask interface {
 	CreateDownloadTask(context.Context, CreateDownloadTaskParams) (CreateDownloadTaskOutput, error)
 	ExecuteDownloadTask(context.Context, uint64) error
 	GetDownloadTaskList(context.Context, GetDownloadTaskListParams) (GetDownloadTaskListOutput, error)
+	GetDownloadTaskFile(context.Context, GetDownloadTaskFileParams) (io.ReadCloser, error)
 }
 
 type downloadTask struct {
@@ -280,4 +289,36 @@ func (d downloadTask) GetDownloadTaskList(ctx context.Context, params GetDownloa
 		}),
 		TotalCount: count,
 	}, nil
+}
+
+func (d downloadTask) GetDownloadTaskFile(ctx context.Context, params GetDownloadTaskFileParams) (io.ReadCloser, error) {
+	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
+	if err != nil {
+		return nil, err
+	}
+
+	downloadTask, err := d.downloadTaskDataAccessor.GetDownloadTask(ctx, params.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if downloadTask.OfAccountID != accountID {
+		return nil, status.Error(codes.PermissionDenied, "trying to get file of a download task the account not found")
+	}
+
+	if downloadTask.DownloadStatus != int32(go_load.DownloadStatus_DOWNLOAD_STATUS_SUCCESS) {
+		return nil, status.Error(codes.Internal, "download task does not have a status of success")
+	}
+
+	metadata, ok := downloadTask.Metadata.Data.(map[string]any)
+	if !ok {
+		return nil, status.Error(codes.Internal, "download task is not a map[string]any")
+	}
+
+	fileName, ok := metadata[downloadTaskMetadataFieldNameFileName]
+	if !ok {
+		return nil, status.Error(codes.Internal, "download task metadata does not contain file name")
+	}
+
+	return d.fileClient.Reader(ctx, fileName.(string))
 }

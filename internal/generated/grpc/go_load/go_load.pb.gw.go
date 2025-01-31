@@ -135,6 +135,27 @@ func local_request_GoLoadService_GetDownloadTaskList_0(ctx context.Context, mars
 
 }
 
+func request_GoLoadService_GetDownloadTaskFile_0(ctx context.Context, marshaler runtime.Marshaler, client GoLoadServiceClient, req *http.Request, pathParams map[string]string) (GoLoadService_GetDownloadTaskFileClient, runtime.ServerMetadata, error) {
+	var protoReq GetDownloadTaskFileRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	stream, err := client.GetDownloadTaskFile(ctx, &protoReq)
+	if err != nil {
+		return nil, metadata, err
+	}
+	header, err := stream.Header()
+	if err != nil {
+		return nil, metadata, err
+	}
+	metadata.HeaderMD = header
+	return stream, metadata, nil
+
+}
+
 // RegisterGoLoadServiceHandlerServer registers the http handlers for service GoLoadService to "mux".
 // UnaryRPC     :call GoLoadServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -240,6 +261,13 @@ func RegisterGoLoadServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 
 		forward_GoLoadService_GetDownloadTaskList_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
+	})
+
+	mux.Handle("POST", pattern_GoLoadService_GetDownloadTaskFile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
+		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+		return
 	})
 
 	return nil
@@ -371,6 +399,28 @@ func RegisterGoLoadServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 
 	})
 
+	mux.Handle("POST", pattern_GoLoadService_GetDownloadTaskFile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/go_load.GoLoadService/GetDownloadTaskFile", runtime.WithHTTPPathPattern("/go_load.GoLoadService/GetDownloadTaskFile"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_GoLoadService_GetDownloadTaskFile_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_GoLoadService_GetDownloadTaskFile_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -382,6 +432,8 @@ var (
 	pattern_GoLoadService_CreateDownloadTask_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"go_load.GoLoadService", "CreateDownloadTask"}, ""))
 
 	pattern_GoLoadService_GetDownloadTaskList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"go_load.GoLoadService", "GetDownloadTaskList"}, ""))
+
+	pattern_GoLoadService_GetDownloadTaskFile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"go_load.GoLoadService", "GetDownloadTaskFile"}, ""))
 )
 
 var (
@@ -392,4 +444,6 @@ var (
 	forward_GoLoadService_CreateDownloadTask_0 = runtime.ForwardResponseMessage
 
 	forward_GoLoadService_GetDownloadTaskList_0 = runtime.ForwardResponseMessage
+
+	forward_GoLoadService_GetDownloadTaskFile_0 = runtime.ForwardResponseStream
 )

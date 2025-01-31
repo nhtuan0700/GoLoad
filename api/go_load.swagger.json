@@ -112,6 +112,47 @@
         ]
       }
     },
+    "/go_load.GoLoadService/GetDownloadTaskFile": {
+      "post": {
+        "operationId": "GoLoadService_GetDownloadTaskFile",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/go_loadGetDownloadTaskFileResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of go_loadGetDownloadTaskFileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go_loadGetDownloadTaskFileRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GoLoadService"
+        ]
+      }
+    },
     "/go_load.GoLoadService/GetDownloadTaskList": {
       "post": {
         "operationId": "GoLoadService_GetDownloadTaskList",
@@ -255,6 +296,24 @@
         "DOWNLOAD_TYPE_HTTP"
       ],
       "default": "DOWNLOAD_TYPE_UNSPECIFIED"
+    },
+    "go_loadGetDownloadTaskFileRequest": {
+      "type": "object",
+      "properties": {
+        "downloadTaskId": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "go_loadGetDownloadTaskFileResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
     },
     "go_loadGetDownloadTaskListRequest": {
       "type": "object",

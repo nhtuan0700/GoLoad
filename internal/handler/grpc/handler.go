@@ -2,7 +2,10 @@ package grpc
 
 import (
 	"context"
+	"errors"
+	"io"
 
+	"github.com/nhtuan0700/GoLoad/internal/configs"
 	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
 	"github.com/nhtuan0700/GoLoad/internal/logic"
 	"google.golang.org/grpc"
@@ -16,18 +19,26 @@ const (
 
 type Handler struct {
 	go_load.UnimplementedGoLoadServiceServer
-	accountLogic      logic.Account
-	downloadTaskLogic logic.DownloadTask
+	accountLogic                                 logic.Account
+	downloadTaskLogic                            logic.DownloadTask
+	getDownloadTaskFileResponseBufferSizeInBytes uint64
 }
 
 func NewHandler(
 	accountLogic logic.Account,
 	downloadTaskLogic logic.DownloadTask,
-) go_load.GoLoadServiceServer {
+	grpcConfig configs.GRPC,
+) (go_load.GoLoadServiceServer, error) {
+	getDownloadTaskFileResponseBufferSizeInBytes, err := grpcConfig.GetDownloadTaskFile.GetResponseBufferSizeInBytes()
+	if err != nil {
+		return nil, err
+	}
+
 	return Handler{
 		accountLogic:      accountLogic,
 		downloadTaskLogic: downloadTaskLogic,
-	}
+		getDownloadTaskFileResponseBufferSizeInBytes: getDownloadTaskFileResponseBufferSizeInBytes,
+	}, nil
 }
 
 func (h Handler) getAuthTokenMetadata(ctx context.Context) string {
@@ -119,4 +130,42 @@ func (h Handler) GetDownloadTaskList(
 		DownloadTaskList: output.DonwloadTaskList,
 		TotalCount:       output.TotalCount,
 	}, nil
+}
+
+func (h Handler) GetDownloadTaskFile(
+	request *go_load.GetDownloadTaskFileRequest,
+	server go_load.GoLoadService_GetDownloadTaskFileServer,
+) error {
+	outputReader, err := h.downloadTaskLogic.GetDownloadTaskFile(server.Context(), logic.GetDownloadTaskFileParams{
+		Token: h.getAuthTokenMetadata(server.Context()),
+		ID:    request.DownloadTaskId,
+	})
+	if err != nil {
+		return err
+	}
+	defer outputReader.Close()
+
+	for {
+		dataBuffer := make([]byte, h.getDownloadTaskFileResponseBufferSizeInBytes)
+		readByteCount, readErr := outputReader.Read(dataBuffer)
+		if readByteCount > 0 {
+			sendErr := server.Send(&go_load.GetDownloadTaskFileResponse{
+				Data: dataBuffer[:readByteCount],
+			})
+			if sendErr != nil {
+				return sendErr
+			}
+
+			continue
+		}
+
+		if readErr != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			return readErr
+		}
+	}
+	return nil
 }

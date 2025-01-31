@@ -11,6 +11,7 @@ service GoLoadService {
   rpc CreateSession(CreateSessionRequest) returns(CreateSessionResponse) {}
   rpc CreateDownloadTask(CreateDownloadTaskRequest) returns(CreateDownloadTaskResponse) {}
   rpc GetDownloadTaskList(GetDownloadTaskListRequest) returns(GetDownloadTaskListResponse) {}
+  rpc GetDownloadTaskFile(GetDownloadTaskFileRequest) returns (stream GetDownloadTaskFileResponse) {}
 }
 
 message Account {
@@ -82,4 +83,12 @@ message GetDownloadTaskListRequest {
 message GetDownloadTaskListResponse {
   repeated DownloadTask download_task_list = 1;
   uint64 total_count = 2;
+}
+
+message GetDownloadTaskFileRequest {
+  uint64 download_task_id = 1;
+}
+
+message GetDownloadTaskFileResponse {
+  bytes data = 1;
 }

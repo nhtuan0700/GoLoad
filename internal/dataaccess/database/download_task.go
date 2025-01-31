@@ -37,6 +37,7 @@ type DownloadTask struct {
 type DownloadTaskDataAccessor interface {
 	CreateDownloadTask(ctx context.Context, downloadTask DownloadTask) (uint64, error)
 	UpdateDownloadTask(ctx context.Context, downloadTask DownloadTask) error
+	GetDownloadTask(ctx context.Context, id uint64) (DownloadTask, error)
 	GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error)
 	GetDownloadTaskListByAccount(ctx context.Context, accountID uint64, limit uint64, offset uint64) ([]DownloadTask, uint64, error)
 	WithDatabase(database Database) DownloadTaskDataAccessor
@@ -154,6 +155,28 @@ func (d *downloadTaskDataAccessor) GetDownloadTaskListByAccount(
 	}
 
 	return downloadTaskList, uint64(count), nil
+}
+
+func (d *downloadTaskDataAccessor) GetDownloadTask(ctx context.Context, id uint64) (DownloadTask, error) {
+	logger := utils.LoggerWithContext(ctx, d.logger).With(zap.Uint64("id", id))
+
+	var downloadTask DownloadTask
+	found, err := d.database.
+		From(TableNameDownloadTask).
+		Where(goqu.Ex{ColNameAccountPasswordOfAccountID: id}).
+		Executor().
+		ScanStructContext(ctx, &downloadTask)
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to get download task")
+		return DownloadTask{}, status.Error(codes.Internal, "failed to get download task")
+	}
+
+	if !found {
+		logger.Warn("download task not found")
+		return DownloadTask{}, ErrDownloadTaskNotFound
+	}
+
+	return downloadTask, nil
 }
 
 func (d *downloadTaskDataAccessor) WithDatabase(database Database) DownloadTaskDataAccessor {
