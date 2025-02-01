@@ -60,8 +60,8 @@ func (h Handler) CreateAccount(
 	request *go_load.CreateAccountRequest,
 ) (*go_load.CreateAccountResponse, error) {
 	output, err := h.accountLogic.CreateAccount(ctx, logic.CreateAccountParams{
-		AccountName:     request.AccountName,
-		AccountPassword: request.Password,
+		AccountName:     request.GetAccountName(),
+		AccountPassword: request.GetPassword(),
 	})
 	if err != nil {
 		return nil, err
@@ -77,8 +77,8 @@ func (h Handler) CreateSession(
 	request *go_load.CreateSessionRequest,
 ) (*go_load.CreateSessionResponse, error) {
 	output, err := h.accountLogic.CreateSession(ctx, logic.CreateSessionParams{
-		AccountName:     request.AccountName,
-		AccountPassword: request.Password,
+		AccountName:     request.GetAccountName(),
+		AccountPassword: request.GetPassword(),
 	})
 	if err != nil {
 		return nil, err
@@ -100,10 +100,9 @@ func (h Handler) CreateDownloadTask(
 ) (*go_load.CreateDownloadTaskResponse, error) {
 	output, err := h.downloadTaskLogic.CreateDownloadTask(ctx, logic.CreateDownloadTaskParams{
 		Token:        h.getAuthTokenMetadata(ctx),
-		URL:          request.Url,
-		DownloadType: request.DownloadType,
+		URL:          request.GetUrl(),
+		DownloadType: request.GetDownloadType(),
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +137,7 @@ func (h Handler) GetDownloadTaskFile(
 ) error {
 	outputReader, err := h.downloadTaskLogic.GetDownloadTaskFile(server.Context(), logic.GetDownloadTaskFileParams{
 		Token: h.getAuthTokenMetadata(server.Context()),
-		ID:    request.DownloadTaskId,
+		ID:    request.GetDownloadTaskId(),
 	})
 	if err != nil {
 		return err
@@ -168,4 +167,37 @@ func (h Handler) GetDownloadTaskFile(
 		}
 	}
 	return nil
+}
+
+func (h Handler) UpdateDownloadTask(
+	ctx context.Context,
+	request *go_load.UpdateDownloadTaskRequest,
+) (*go_load.UpdateDownloadTaskResponse, error) {
+	output, err := h.downloadTaskLogic.UpdateDownloadTask(ctx, logic.UpdateDownloadTaskParams{
+		Token: h.getAuthTokenMetadata(ctx),
+		ID:    request.GetDownloadTaskId(),
+		URL:   request.GetUrl(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.UpdateDownloadTaskResponse{
+		DownloadTask: output.DownloadTask,
+	}, nil
+}
+
+func (h Handler) DeleteDownloadTask(
+	ctx context.Context,
+	request *go_load.DeleteDownloadTaskRequest,
+) (*go_load.DeleteDownloadTaskResponse, error) {
+	err := h.downloadTaskLogic.DeleteDownloadTask(ctx, logic.DeleteDownloadTaskParams{
+		Token: h.getAuthTokenMetadata(ctx),
+		ID: request.GetDownloadTaskId(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &go_load.DeleteDownloadTaskResponse{}, nil
 }

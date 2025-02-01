@@ -14,6 +14,8 @@ service GoLoadService {
   rpc CreateDownloadTask(CreateDownloadTaskRequest) returns(CreateDownloadTaskResponse) {}
   rpc GetDownloadTaskList(GetDownloadTaskListRequest) returns(GetDownloadTaskListResponse) {}
   rpc GetDownloadTaskFile(GetDownloadTaskFileRequest) returns (stream GetDownloadTaskFileResponse) {}
+  rpc UpdateDownloadTask(UpdateDownloadTaskRequest) returns (UpdateDownloadTaskResponse) {}
+  rpc DeleteDownloadTask(DeleteDownloadTaskRequest) returns (DeleteDownloadTaskResponse) {}
 }
 
 message Account {
@@ -94,3 +96,18 @@ message GetDownloadTaskFileRequest {
 message GetDownloadTaskFileResponse {
   bytes data = 1;
 }
+
+message UpdateDownloadTaskRequest {
+  uint64 download_task_id = 1;
+  string url = 2 [(validate.rules).string.uri = true];
+}
+
+message UpdateDownloadTaskResponse {
+  DownloadTask download_task = 1;
+}
+
+message DeleteDownloadTaskRequest {
+  uint64 download_task_id = 1;
+}
+
+message DeleteDownloadTaskResponse {}

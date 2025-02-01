@@ -48,11 +48,28 @@ type GetDownloadTaskFileParams struct {
 	ID    uint64
 }
 
+type UpdateDownloadTaskParams struct {
+	Token string
+	ID    uint64
+	URL   string
+}
+
+type UpdateDownloadTaskOutput struct {
+	DownloadTask *go_load.DownloadTask
+}
+
+type DeleteDownloadTaskParams struct {
+	Token string
+	ID    uint64
+}
+
 type DownloadTask interface {
 	CreateDownloadTask(context.Context, CreateDownloadTaskParams) (CreateDownloadTaskOutput, error)
 	ExecuteDownloadTask(context.Context, uint64) error
 	GetDownloadTaskList(context.Context, GetDownloadTaskListParams) (GetDownloadTaskListOutput, error)
 	GetDownloadTaskFile(context.Context, GetDownloadTaskFileParams) (io.ReadCloser, error)
+	UpdateDownloadTask(context.Context, UpdateDownloadTaskParams) (UpdateDownloadTaskOutput, error)
+	DeleteDownloadTask(context.Context, DeleteDownloadTaskParams) error
 }
 
 type downloadTask struct {
@@ -303,7 +320,7 @@ func (d downloadTask) GetDownloadTaskFile(ctx context.Context, params GetDownloa
 	}
 
 	if downloadTask.OfAccountID != accountID {
-		return nil, status.Error(codes.PermissionDenied, "trying to get file of a download task the account not found")
+		return nil, status.Error(codes.PermissionDenied, "trying to get file of a download task the account does not own")
 	}
 
 	if downloadTask.DownloadStatus != int32(go_load.DownloadStatus_DOWNLOAD_STATUS_SUCCESS) {
@@ -321,4 +338,62 @@ func (d downloadTask) GetDownloadTaskFile(ctx context.Context, params GetDownloa
 	}
 
 	return d.fileClient.Reader(ctx, fileName.(string))
+}
+
+func (d downloadTask) UpdateDownloadTask(ctx context.Context, params UpdateDownloadTaskParams) (UpdateDownloadTaskOutput, error) {
+	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
+	if err != nil {
+		return UpdateDownloadTaskOutput{}, err
+	}
+
+	var output UpdateDownloadTaskOutput
+	account, err := d.accountDataAccessor.GetAccountByID(ctx, accountID)
+	if err != nil {
+		return UpdateDownloadTaskOutput{}, err
+	}
+
+	txErr := d.goquDatabase.WithTx(func(tx *goqu.TxDatabase) error {
+		downloadTask, getDownloadTaskWithXLockErr := d.downloadTaskDataAccessor.WithDatabase(tx).GetDownloadTaskWithXLock(ctx, params.ID)
+		if getDownloadTaskWithXLockErr != nil {
+			return getDownloadTaskWithXLockErr
+		}
+		if downloadTask.OfAccountID != accountID {
+			return status.Error(codes.PermissionDenied, "trying to update a download task the account does not own")
+		}
+
+		downloadTask.URL = params.URL
+		updateErr := d.downloadTaskDataAccessor.WithDatabase(tx).UpdateDownloadTask(ctx, downloadTask)
+		if updateErr != nil {
+			return updateErr
+		}
+
+		output.DownloadTask = d.databaseDownloadTaskToProtoDownloadTask(downloadTask, account)
+		return nil
+	})
+
+	if txErr != nil {
+		return UpdateDownloadTaskOutput{}, txErr
+	}
+
+	return output, nil
+}
+
+func (d downloadTask) DeleteDownloadTask(ctx context.Context, params DeleteDownloadTaskParams) error {
+	accountID, _, err := d.tokenLogic.GetAccountIDAndExpireTime(ctx, params.Token)
+	if err != nil {
+		return err
+	}
+
+	return d.goquDatabase.WithTx(func(tx *goqu.TxDatabase) error {
+		downloadTask, getDownloadTaskWithXLockErr := d.downloadTaskDataAccessor.WithDatabase(tx).GetDownloadTaskWithXLock(ctx, params.ID)
+		if getDownloadTaskWithXLockErr != nil {
+			return getDownloadTaskWithXLockErr
+		}
+
+		if downloadTask.OfAccountID != accountID {
+			return status.Error(codes.PermissionDenied, "trying to delete a download task the account does not own")
+		}
+
+		return d.downloadTaskDataAccessor.WithDatabase(tx).DeleteDownloadTask(ctx, params.ID)
+	})
 }

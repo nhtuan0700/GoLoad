@@ -27,6 +27,8 @@ type GoLoadServiceClient interface {
 	CreateDownloadTask(ctx context.Context, in *CreateDownloadTaskRequest, opts ...grpc.CallOption) (*CreateDownloadTaskResponse, error)
 	GetDownloadTaskList(ctx context.Context, in *GetDownloadTaskListRequest, opts ...grpc.CallOption) (*GetDownloadTaskListResponse, error)
 	GetDownloadTaskFile(ctx context.Context, in *GetDownloadTaskFileRequest, opts ...grpc.CallOption) (GoLoadService_GetDownloadTaskFileClient, error)
+	UpdateDownloadTask(ctx context.Context, in *UpdateDownloadTaskRequest, opts ...grpc.CallOption) (*UpdateDownloadTaskResponse, error)
+	DeleteDownloadTask(ctx context.Context, in *DeleteDownloadTaskRequest, opts ...grpc.CallOption) (*DeleteDownloadTaskResponse, error)
 }
 
 type goLoadServiceClient struct {
@@ -105,6 +107,24 @@ func (x *goLoadServiceGetDownloadTaskFileClient) Recv() (*GetDownloadTaskFileRes
 	return m, nil
 }
 
+func (c *goLoadServiceClient) UpdateDownloadTask(ctx context.Context, in *UpdateDownloadTaskRequest, opts ...grpc.CallOption) (*UpdateDownloadTaskResponse, error) {
+	out := new(UpdateDownloadTaskResponse)
+	err := c.cc.Invoke(ctx, "/go_load.GoLoadService/UpdateDownloadTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *goLoadServiceClient) DeleteDownloadTask(ctx context.Context, in *DeleteDownloadTaskRequest, opts ...grpc.CallOption) (*DeleteDownloadTaskResponse, error) {
+	out := new(DeleteDownloadTaskResponse)
+	err := c.cc.Invoke(ctx, "/go_load.GoLoadService/DeleteDownloadTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GoLoadServiceServer is the server API for GoLoadService service.
 // All implementations must embed UnimplementedGoLoadServiceServer
 // for forward compatibility
@@ -114,6 +134,8 @@ type GoLoadServiceServer interface {
 	CreateDownloadTask(context.Context, *CreateDownloadTaskRequest) (*CreateDownloadTaskResponse, error)
 	GetDownloadTaskList(context.Context, *GetDownloadTaskListRequest) (*GetDownloadTaskListResponse, error)
 	GetDownloadTaskFile(*GetDownloadTaskFileRequest, GoLoadService_GetDownloadTaskFileServer) error
+	UpdateDownloadTask(context.Context, *UpdateDownloadTaskRequest) (*UpdateDownloadTaskResponse, error)
+	DeleteDownloadTask(context.Context, *DeleteDownloadTaskRequest) (*DeleteDownloadTaskResponse, error)
 	mustEmbedUnimplementedGoLoadServiceServer()
 }
 
@@ -135,6 +157,12 @@ func (UnimplementedGoLoadServiceServer) GetDownloadTaskList(context.Context, *Ge
 }
 func (UnimplementedGoLoadServiceServer) GetDownloadTaskFile(*GetDownloadTaskFileRequest, GoLoadService_GetDownloadTaskFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDownloadTaskFile not implemented")
+}
+func (UnimplementedGoLoadServiceServer) UpdateDownloadTask(context.Context, *UpdateDownloadTaskRequest) (*UpdateDownloadTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDownloadTask not implemented")
+}
+func (UnimplementedGoLoadServiceServer) DeleteDownloadTask(context.Context, *DeleteDownloadTaskRequest) (*DeleteDownloadTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDownloadTask not implemented")
 }
 func (UnimplementedGoLoadServiceServer) mustEmbedUnimplementedGoLoadServiceServer() {}
 
@@ -242,6 +270,42 @@ func (x *goLoadServiceGetDownloadTaskFileServer) Send(m *GetDownloadTaskFileResp
 	return x.ServerStream.SendMsg(m)
 }
 
+func _GoLoadService_UpdateDownloadTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDownloadTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoLoadServiceServer).UpdateDownloadTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/go_load.GoLoadService/UpdateDownloadTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoLoadServiceServer).UpdateDownloadTask(ctx, req.(*UpdateDownloadTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GoLoadService_DeleteDownloadTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDownloadTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GoLoadServiceServer).DeleteDownloadTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/go_load.GoLoadService/DeleteDownloadTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GoLoadServiceServer).DeleteDownloadTask(ctx, req.(*DeleteDownloadTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GoLoadService_ServiceDesc is the grpc.ServiceDesc for GoLoadService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -264,6 +328,14 @@ var GoLoadService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDownloadTaskList",
 			Handler:    _GoLoadService_GetDownloadTaskList_Handler,
+		},
+		{
+			MethodName: "UpdateDownloadTask",
+			Handler:    _GoLoadService_UpdateDownloadTask_Handler,
+		},
+		{
+			MethodName: "DeleteDownloadTask",
+			Handler:    _GoLoadService_DeleteDownloadTask_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

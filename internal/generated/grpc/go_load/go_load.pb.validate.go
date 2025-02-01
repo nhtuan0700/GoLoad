@@ -1481,3 +1481,465 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetDownloadTaskFileResponseValidationError{}
+
+// Validate checks the field values on UpdateDownloadTaskRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateDownloadTaskRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateDownloadTaskRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdateDownloadTaskRequestMultiError, or nil if none found.
+func (m *UpdateDownloadTaskRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateDownloadTaskRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DownloadTaskId
+
+	if uri, err := url.Parse(m.GetUrl()); err != nil {
+		err = UpdateDownloadTaskRequestValidationError{
+			field:  "Url",
+			reason: "value must be a valid URI",
+			cause:  err,
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	} else if !uri.IsAbs() {
+		err := UpdateDownloadTaskRequestValidationError{
+			field:  "Url",
+			reason: "value must be absolute",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return UpdateDownloadTaskRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateDownloadTaskRequestMultiError is an error wrapping multiple validation
+// errors returned by UpdateDownloadTaskRequest.ValidateAll() if the
+// designated constraints aren't met.
+type UpdateDownloadTaskRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateDownloadTaskRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateDownloadTaskRequestMultiError) AllErrors() []error { return m }
+
+// UpdateDownloadTaskRequestValidationError is the validation error returned by
+// UpdateDownloadTaskRequest.Validate if the designated constraints aren't met.
+type UpdateDownloadTaskRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateDownloadTaskRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateDownloadTaskRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateDownloadTaskRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateDownloadTaskRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateDownloadTaskRequestValidationError) ErrorName() string {
+	return "UpdateDownloadTaskRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateDownloadTaskRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateDownloadTaskRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateDownloadTaskRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateDownloadTaskRequestValidationError{}
+
+// Validate checks the field values on UpdateDownloadTaskResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdateDownloadTaskResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdateDownloadTaskResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdateDownloadTaskResponseMultiError, or nil if none found.
+func (m *UpdateDownloadTaskResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdateDownloadTaskResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDownloadTask()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateDownloadTaskResponseValidationError{
+					field:  "DownloadTask",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateDownloadTaskResponseValidationError{
+					field:  "DownloadTask",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDownloadTask()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateDownloadTaskResponseValidationError{
+				field:  "DownloadTask",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdateDownloadTaskResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdateDownloadTaskResponseMultiError is an error wrapping multiple
+// validation errors returned by UpdateDownloadTaskResponse.ValidateAll() if
+// the designated constraints aren't met.
+type UpdateDownloadTaskResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdateDownloadTaskResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdateDownloadTaskResponseMultiError) AllErrors() []error { return m }
+
+// UpdateDownloadTaskResponseValidationError is the validation error returned
+// by UpdateDownloadTaskResponse.Validate if the designated constraints aren't met.
+type UpdateDownloadTaskResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdateDownloadTaskResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdateDownloadTaskResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdateDownloadTaskResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdateDownloadTaskResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdateDownloadTaskResponseValidationError) ErrorName() string {
+	return "UpdateDownloadTaskResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdateDownloadTaskResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdateDownloadTaskResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdateDownloadTaskResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdateDownloadTaskResponseValidationError{}
+
+// Validate checks the field values on DeleteDownloadTaskRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteDownloadTaskRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteDownloadTaskRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteDownloadTaskRequestMultiError, or nil if none found.
+func (m *DeleteDownloadTaskRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteDownloadTaskRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for DownloadTaskId
+
+	if len(errors) > 0 {
+		return DeleteDownloadTaskRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteDownloadTaskRequestMultiError is an error wrapping multiple validation
+// errors returned by DeleteDownloadTaskRequest.ValidateAll() if the
+// designated constraints aren't met.
+type DeleteDownloadTaskRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteDownloadTaskRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteDownloadTaskRequestMultiError) AllErrors() []error { return m }
+
+// DeleteDownloadTaskRequestValidationError is the validation error returned by
+// DeleteDownloadTaskRequest.Validate if the designated constraints aren't met.
+type DeleteDownloadTaskRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteDownloadTaskRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteDownloadTaskRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteDownloadTaskRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteDownloadTaskRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteDownloadTaskRequestValidationError) ErrorName() string {
+	return "DeleteDownloadTaskRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteDownloadTaskRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteDownloadTaskRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteDownloadTaskRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteDownloadTaskRequestValidationError{}
+
+// Validate checks the field values on DeleteDownloadTaskResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeleteDownloadTaskResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeleteDownloadTaskResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeleteDownloadTaskResponseMultiError, or nil if none found.
+func (m *DeleteDownloadTaskResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeleteDownloadTaskResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeleteDownloadTaskResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeleteDownloadTaskResponseMultiError is an error wrapping multiple
+// validation errors returned by DeleteDownloadTaskResponse.ValidateAll() if
+// the designated constraints aren't met.
+type DeleteDownloadTaskResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeleteDownloadTaskResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeleteDownloadTaskResponseMultiError) AllErrors() []error { return m }
+
+// DeleteDownloadTaskResponseValidationError is the validation error returned
+// by DeleteDownloadTaskResponse.Validate if the designated constraints aren't met.
+type DeleteDownloadTaskResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeleteDownloadTaskResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeleteDownloadTaskResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeleteDownloadTaskResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeleteDownloadTaskResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeleteDownloadTaskResponseValidationError) ErrorName() string {
+	return "DeleteDownloadTaskResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeleteDownloadTaskResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeleteDownloadTaskResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeleteDownloadTaskResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeleteDownloadTaskResponseValidationError{}

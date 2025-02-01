@@ -40,6 +40,7 @@ type DownloadTaskDataAccessor interface {
 	GetDownloadTask(ctx context.Context, id uint64) (DownloadTask, error)
 	GetDownloadTaskWithXLock(ctx context.Context, id uint64) (DownloadTask, error)
 	GetDownloadTaskListByAccount(ctx context.Context, accountID uint64, limit uint64, offset uint64) ([]DownloadTask, uint64, error)
+	DeleteDownloadTask(ctx context.Context, id uint64) error
 	WithDatabase(database Database) DownloadTaskDataAccessor
 }
 
@@ -177,6 +178,22 @@ func (d *downloadTaskDataAccessor) GetDownloadTask(ctx context.Context, id uint6
 	}
 
 	return downloadTask, nil
+}
+
+func (d *downloadTaskDataAccessor) DeleteDownloadTask(ctx context.Context, id uint64) error {
+	logger := utils.LoggerWithContext(ctx, d.logger)
+
+	_, err := d.database.
+		Delete(TableNameDownloadTask).
+		Where(goqu.Ex{ColNameDownloadTaskID: id}).
+		Executor().
+		ExecContext(ctx)
+	if err != nil {
+		logger.With(zap.Error(err)).Error("failed to delete download task")
+		return status.Error(codes.Internal, "failed to delete download task")
+	}
+
+	return nil
 }
 
 func (d *downloadTaskDataAccessor) WithDatabase(database Database) DownloadTaskDataAccessor {

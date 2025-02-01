@@ -112,6 +112,38 @@
         ]
       }
     },
+    "/go_load.GoLoadService/DeleteDownloadTask": {
+      "post": {
+        "operationId": "GoLoadService_DeleteDownloadTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_loadDeleteDownloadTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go_loadDeleteDownloadTaskRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GoLoadService"
+        ]
+      }
+    },
     "/go_load.GoLoadService/GetDownloadTaskFile": {
       "post": {
         "operationId": "GoLoadService_GetDownloadTaskFile",
@@ -177,6 +209,38 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/go_loadGetDownloadTaskListRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GoLoadService"
+        ]
+      }
+    },
+    "/go_load.GoLoadService/UpdateDownloadTask": {
+      "post": {
+        "operationId": "GoLoadService_UpdateDownloadTask",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_loadUpdateDownloadTaskResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go_loadUpdateDownloadTaskRequest"
             }
           }
         ],
@@ -256,6 +320,18 @@
           "$ref": "#/definitions/go_loadAccount"
         }
       }
+    },
+    "go_loadDeleteDownloadTaskRequest": {
+      "type": "object",
+      "properties": {
+        "downloadTaskId": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "go_loadDeleteDownloadTaskResponse": {
+      "type": "object"
     },
     "go_loadDownloadStatus": {
       "type": "string",
@@ -341,6 +417,26 @@
         "totalCount": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "go_loadUpdateDownloadTaskRequest": {
+      "type": "object",
+      "properties": {
+        "downloadTaskId": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    "go_loadUpdateDownloadTaskResponse": {
+      "type": "object",
+      "properties": {
+        "downloadTask": {
+          "$ref": "#/definitions/go_loadDownloadTask"
         }
       }
     },
