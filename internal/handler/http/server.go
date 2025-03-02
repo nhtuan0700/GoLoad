@@ -57,6 +57,8 @@ func (s server) getGRPCGatewayHandler(ctx context.Context) (http.Handler, error)
 		servermuxoptions.WithAuthCookieToAuthMetadata(AuthTokenCookieName, handlerGRPC.AuthTokenMetadataName),
 		servermuxoptions.WithAuthMetadataToAuthCookie(handlerGRPC.AuthTokenMetadataName, AuthTokenCookieName, tokenExpiresIn),
 		servermuxoptions.WithRemoveGoAuthMetadata(handlerGRPC.AuthTokenMetadataName),
+		servermuxoptions.WithErrorHandler(handlerGRPC.AuthTokenMetadataName),
+		servermuxoptions.WithSSE(),
 	)
 
 	err = go_load.RegisterGoLoadServiceHandlerFromEndpoint(
