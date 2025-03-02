@@ -248,6 +248,45 @@
           "GoLoadService"
         ]
       }
+    },
+    "/v1/stream": {
+      "get": {
+        "operationId": "GoLoadService_StreamData",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/go_loadStreamResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of go_loadStreamResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GoLoadService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -417,6 +456,14 @@
         "totalCount": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "go_loadStreamResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
         }
       }
     },

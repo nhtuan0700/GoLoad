@@ -29,6 +29,7 @@ type GoLoadServiceClient interface {
 	GetDownloadTaskFile(ctx context.Context, in *GetDownloadTaskFileRequest, opts ...grpc.CallOption) (GoLoadService_GetDownloadTaskFileClient, error)
 	UpdateDownloadTask(ctx context.Context, in *UpdateDownloadTaskRequest, opts ...grpc.CallOption) (*UpdateDownloadTaskResponse, error)
 	DeleteDownloadTask(ctx context.Context, in *DeleteDownloadTaskRequest, opts ...grpc.CallOption) (*DeleteDownloadTaskResponse, error)
+	StreamData(ctx context.Context, in *StreamRequest, opts ...grpc.CallOption) (GoLoadService_StreamDataClient, error)
 }
 
 type goLoadServiceClient struct {
@@ -125,6 +126,38 @@ func (c *goLoadServiceClient) DeleteDownloadTask(ctx context.Context, in *Delete
 	return out, nil
 }
 
+func (c *goLoadServiceClient) StreamData(ctx context.Context, in *StreamRequest, opts ...grpc.CallOption) (GoLoadService_StreamDataClient, error) {
+	stream, err := c.cc.NewStream(ctx, &GoLoadService_ServiceDesc.Streams[1], "/go_load.GoLoadService/StreamData", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &goLoadServiceStreamDataClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type GoLoadService_StreamDataClient interface {
+	Recv() (*StreamResponse, error)
+	grpc.ClientStream
+}
+
+type goLoadServiceStreamDataClient struct {
+	grpc.ClientStream
+}
+
+func (x *goLoadServiceStreamDataClient) Recv() (*StreamResponse, error) {
+	m := new(StreamResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // GoLoadServiceServer is the server API for GoLoadService service.
 // All implementations must embed UnimplementedGoLoadServiceServer
 // for forward compatibility
@@ -136,6 +169,7 @@ type GoLoadServiceServer interface {
 	GetDownloadTaskFile(*GetDownloadTaskFileRequest, GoLoadService_GetDownloadTaskFileServer) error
 	UpdateDownloadTask(context.Context, *UpdateDownloadTaskRequest) (*UpdateDownloadTaskResponse, error)
 	DeleteDownloadTask(context.Context, *DeleteDownloadTaskRequest) (*DeleteDownloadTaskResponse, error)
+	StreamData(*StreamRequest, GoLoadService_StreamDataServer) error
 	mustEmbedUnimplementedGoLoadServiceServer()
 }
 
@@ -163,6 +197,9 @@ func (UnimplementedGoLoadServiceServer) UpdateDownloadTask(context.Context, *Upd
 }
 func (UnimplementedGoLoadServiceServer) DeleteDownloadTask(context.Context, *DeleteDownloadTaskRequest) (*DeleteDownloadTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDownloadTask not implemented")
+}
+func (UnimplementedGoLoadServiceServer) StreamData(*StreamRequest, GoLoadService_StreamDataServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamData not implemented")
 }
 func (UnimplementedGoLoadServiceServer) mustEmbedUnimplementedGoLoadServiceServer() {}
 
@@ -306,6 +343,27 @@ func _GoLoadService_DeleteDownloadTask_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GoLoadService_StreamData_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(GoLoadServiceServer).StreamData(m, &goLoadServiceStreamDataServer{stream})
+}
+
+type GoLoadService_StreamDataServer interface {
+	Send(*StreamResponse) error
+	grpc.ServerStream
+}
+
+type goLoadServiceStreamDataServer struct {
+	grpc.ServerStream
+}
+
+func (x *goLoadServiceStreamDataServer) Send(m *StreamResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // GoLoadService_ServiceDesc is the grpc.ServiceDesc for GoLoadService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -342,6 +400,11 @@ var GoLoadService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetDownloadTaskFile",
 			Handler:       _GoLoadService_GetDownloadTaskFile_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StreamData",
+			Handler:       _GoLoadService_StreamData_Handler,
 			ServerStreams: true,
 		},
 	},

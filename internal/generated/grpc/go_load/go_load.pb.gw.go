@@ -208,6 +208,34 @@ func local_request_GoLoadService_DeleteDownloadTask_0(ctx context.Context, marsh
 
 }
 
+var (
+	filter_GoLoadService_StreamData_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_GoLoadService_StreamData_0(ctx context.Context, marshaler runtime.Marshaler, client GoLoadServiceClient, req *http.Request, pathParams map[string]string) (GoLoadService_StreamDataClient, runtime.ServerMetadata, error) {
+	var protoReq StreamRequest
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GoLoadService_StreamData_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	stream, err := client.StreamData(ctx, &protoReq)
+	if err != nil {
+		return nil, metadata, err
+	}
+	header, err := stream.Header()
+	if err != nil {
+		return nil, metadata, err
+	}
+	metadata.HeaderMD = header
+	return stream, metadata, nil
+
+}
+
 // RegisterGoLoadServiceHandlerServer registers the http handlers for service GoLoadService to "mux".
 // UnaryRPC     :call GoLoadServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -370,6 +398,13 @@ func RegisterGoLoadServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 
 		forward_GoLoadService_DeleteDownloadTask_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
+	})
+
+	mux.Handle("GET", pattern_GoLoadService_StreamData_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		err := status.Error(codes.Unimplemented, "streaming calls are not yet supported in the in-process transport")
+		_, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+		return
 	})
 
 	return nil
@@ -567,6 +602,28 @@ func RegisterGoLoadServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 
 	})
 
+	mux.Handle("GET", pattern_GoLoadService_StreamData_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/go_load.GoLoadService/StreamData", runtime.WithHTTPPathPattern("/v1/stream"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_GoLoadService_StreamData_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_GoLoadService_StreamData_0(annotatedContext, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -584,6 +641,8 @@ var (
 	pattern_GoLoadService_UpdateDownloadTask_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"go_load.GoLoadService", "UpdateDownloadTask"}, ""))
 
 	pattern_GoLoadService_DeleteDownloadTask_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"go_load.GoLoadService", "DeleteDownloadTask"}, ""))
+
+	pattern_GoLoadService_StreamData_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"v1", "stream"}, ""))
 )
 
 var (
@@ -600,4 +659,6 @@ var (
 	forward_GoLoadService_UpdateDownloadTask_0 = runtime.ForwardResponseMessage
 
 	forward_GoLoadService_DeleteDownloadTask_0 = runtime.ForwardResponseMessage
+
+	forward_GoLoadService_StreamData_0 = runtime.ForwardResponseStream
 )

@@ -3,7 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
+	"time"
 
 	"github.com/nhtuan0700/GoLoad/internal/configs"
 	"github.com/nhtuan0700/GoLoad/internal/generated/grpc/go_load"
@@ -193,11 +195,24 @@ func (h Handler) DeleteDownloadTask(
 ) (*go_load.DeleteDownloadTaskResponse, error) {
 	err := h.downloadTaskLogic.DeleteDownloadTask(ctx, logic.DeleteDownloadTaskParams{
 		Token: h.getAuthTokenMetadata(ctx),
-		ID: request.GetDownloadTaskId(),
+		ID:    request.GetDownloadTaskId(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &go_load.DeleteDownloadTaskResponse{}, nil
+}
+
+func (h Handler) StreamData(req *go_load.StreamRequest, stream go_load.GoLoadService_StreamDataServer) error {
+	for i := 0; i < 10; i++ {
+		resp := &go_load.StreamResponse{
+			Data: fmt.Sprintf("Message %d: %s", i, req.Message),
+		}
+		if err := stream.Send(resp); err != nil {
+			return err
+		}
+		time.Sleep(1 * time.Second) // Simulate processing delay
+	}
+	return nil
 }

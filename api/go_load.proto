@@ -4,7 +4,7 @@ package go_load;
 
 import "api/validate.proto";
 // https://grpc-ecosystem.github.io/grpc-gateway/docs/tutorials/adding_annotations/
-// import "api/google/api/annotations.proto";
+import "api/google/api/annotations.proto";
 
 option go_package="grpc/go_load";
 
@@ -16,6 +16,11 @@ service GoLoadService {
   rpc GetDownloadTaskFile(GetDownloadTaskFileRequest) returns (stream GetDownloadTaskFileResponse) {}
   rpc UpdateDownloadTask(UpdateDownloadTaskRequest) returns (UpdateDownloadTaskResponse) {}
   rpc DeleteDownloadTask(DeleteDownloadTaskRequest) returns (DeleteDownloadTaskResponse) {}
+  rpc StreamData(StreamRequest) returns (stream StreamResponse) {
+    option (google.api.http) = {
+      get: "/v1/stream"
+    };
+  }
 }
 
 message Account {
@@ -111,3 +116,11 @@ message DeleteDownloadTaskRequest {
 }
 
 message DeleteDownloadTaskResponse {}
+
+message StreamRequest {
+  string message = 1;
+}
+
+message StreamResponse {
+  string data = 1;
+}
